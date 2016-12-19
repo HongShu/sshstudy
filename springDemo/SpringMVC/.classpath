@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="melibrary.com.genuitec.eclipse.j2eedt.core.MYECLIPSE_JAVAEE_5_CONTAINER"/>
+	<classpathentry kind="lib" path="springlib/spring-aop-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-aspects-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-beans-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-context-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-context-support-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-core-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-expression-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-instrument-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-instrument-tomcat-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-jdbc-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-jms-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-messaging-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-orm-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-oxm-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-test-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-tx-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-web-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-webmvc-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-webmvc-portlet-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="springlib/spring-websocket-4.3.3.RELEASE.jar"/>
+	<classpathentry kind="lib" path="loggerlib/commons-logging-1.2.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="output" path="WebRoot/WEB-INF/classes"/>
+</classpath>
