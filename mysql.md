@@ -11,7 +11,7 @@
 ## 修改root的默认密码
 
 ```sql
-set password for 'root'@'localhost'=password('hs110528')
+set password for 'root'@'localhost'=password('123456')
 ```
 
 
