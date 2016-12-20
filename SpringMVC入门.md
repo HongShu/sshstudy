@@ -435,3 +435,258 @@ public String handleException(){
 
 # action获取reqeust、session中的属性（未解决）
 
+# Spring数据库访问
+
+1.数据访问哲学：编写良好的Repository以接口的方式暴露功能。
+
+2.将所有的SQLException异常包装成各种各样的DataAccessException，这是一个运行时异常。
+
+3.数据访问模版化：让我们只用关心业务逻辑，其他的模版代码交给spring为我们完成。
+
+impotant tips：Spring所支持的大多数持久化功能都依赖于数据源。因此在声明模版和Repository之前，我们需要在Spring中配置一个数据源来连接数据库。
+
+三种数据源：推荐程度从高到低。
+
+- JNDI查找的数据源
+- 连接池的数据源
+- JDBC驱动程序定义
+
+## 一、配置数据源
+
+### 1.配置JNDI数据源
+
+#### 1）xml配置
+
+```xml
+<jee:jndi-lookup id="dataSource" jndi-name="/jdbc/SpitterDS" resource-ref="true" />
+```
+
+#### 2）java配置
+
+```JAVA
+@Bean
+public JndiObjectFactoryBean dataSource(){
+  JndiObjectFactoryBean jndiObjectFB = new JndiObjectFactoryBean();
+  jndiObjectFB.setJndiName("jdbc/SpitterDS");
+  // 自动给jndi名称加上java:comp/env/
+  jndiObjectFB.setResourceRef(true);
+  jndiObjectFB.setProxyInterFace(javax.sql.DataSource.class);
+}
+```
+
+### 2. 配置数据源连接池
+
+#### 1）xml配置
+
+```xml
+<bean
+      id="dataSource"
+      class="org.apache.commons.dbcp.BasicDataSource"
+      p:driverClassName="com.mysql.jdbc.Driver"
+      p:username="sa"
+      p:password=""
+      p:initialSize="5"
+      p:maxActive="10"
+/>
+```
+
+#### 2）java配置
+
+```JAVA
+@Bean
+public BasicDataSource dataSource(){
+  	BasicDataSource ds = new BasicDataSource();
+  	ds.setDriverClassName("com.mysql.jdbc.Driver");
+  	ds.setUsername("sa");
+  	ds.setPassword("");
+  	ds.setInitialSize(5);
+  	ds.setMaxActive(10);
+   	return ds;
+}
+```
+
+### 3.配置JDBC驱动的数据源
+
+位于包：org.springframework.jdbc.datasource
+
+类名:DriverManagerDataSource、SimpleDriverDataSource、SingleConnectionDataSource
+
+```java
+@Bean
+	public DataSource dataSource(){
+	  	DriverManagerDataSource ds = new DriverManagerDataSource();
+	  	ds.setDriverClassName("com.mysql.jdbc.Driver");
+	  	ds.setUsername("root");
+	  	ds.setPassword("hs110528");
+	  	ds.setUrl("jdbc:mysql://localhost:3306/evaluation");
+	   	return ds;
+	}
+```
+
+
+
+### 4.使用嵌入数据库
+
+### 5.使用profile选择数据源
+
+## 二、使用JDBC模版
+
+- JdbcTemplate（首选）
+- NamedParameterJdbcTemplate
+- SimpleJdbcTemplate（spring3.1废弃）
+
+```java
+@Bean
+	public JdbcTemplate jdbcTemplate(DataSource dataSource){
+		return new JdbcTemplate(dataSource);
+	}
+
+```
+
+```JAVA
+package com.anno.auto;
+@Repository
+public class CourseDao {
+	private JdbcOperations jdbcOperations;
+	@Inject
+	public CourseDao(JdbcOperations jdbcOperations) {
+		super();
+		this.jdbcOperations = jdbcOperations;
+	}
+	public Course findOne(long id) {
+		String sql = "select * from course where course_id=?";
+		return jdbcOperations.queryForObject(sql, new CourseRowMapper(), id);
+	}
+
+	public List<Course> findCoursesByClassName(String className) {
+		String sql = "select * from course where class_name=?";
+		return jdbcOperations.query(sql, new CourseRowMapper(), className);
+	}
+
+	public List<String> findAllClassNames() {
+		String sql = "select distinct(class_name) from course";
+		return jdbcOperations.queryForList(sql, String.class);
+	}
+
+	// 增加评分信息
+	public void addEvaluation(Evaluation evaluation) {
+		String sql = "insert into evaluation(fk_course_id,score)values(?,?)";
+		jdbcOperations.update(sql, evaluation.getFkCourseId(),
+				evaluation.getScore());
+	}
+
+	// 批量增加评分信息
+	public void addAllEvaluation(List<Evaluation> evaluations) {
+		if (evaluations != null) {
+			for (Evaluation evaluation : evaluations) {
+				addEvaluation(evaluation);
+			}
+		}
+	}
+}
+
+class CourseRowMapper implements RowMapper<Course> {
+	@Override
+	public Course mapRow(ResultSet rs, int rowNum) throws SQLException {
+
+		return new Course(rs.getInt(1), rs.getString(2), rs.getString(3),
+				rs.getString(4));
+	}
+}
+
+```
+
+ 复杂sql语句拼接使用
+
+```java
+private static final String INSERT_USER ="insert into User(username, password) values(:username,:password)";
+public void addUser(User user){
+  Map<String,Object> map = new HashMap<String,Object>();
+  map.put("username",user.getUsername);
+  map.put("password",user.getPassword);
+  jdbcOperations.update(INSERT_USER,map);
+}
+```
+
+## 三、Spring与Hibernate（未验证）
+
+## 四、Spring与JPA
+
+### 1.配置实体管理器工厂（entity manager factory）
+
+>基于JPA的应用需要使用EntityManagerFactory的实现类来获取EntityManager实例。
+
+Application-managed：使用不运行JavaEE容器的应用，程序负责打开或关闭实体管理器并在事务中对其进行控制。
+Container-managed：实体管理器由JavaEE创建和管理。
+以上的两种实体管理器都实现了EntityManager接口。两者的区别在于EntityManager的创建和管理方式。
+
+- 应用程序管理
+  PersistenceProvider.createEntityManagerFactory()==>EntityManagerFactory==>EntityManager
+- 容器管理(此种场景，spring会担当容器的角色)
+  PersistenceProvider.createContainerEntityManagerFactory()==>EntityManagerFactory==>EntityManager
+
+以上是实现原理，不理解也不影响使用。
+
+LocalContainerEntityManagerFactoryBean 配置这个bean，实现容器管理类型的“实体管理器”工厂的创建。
+
+```java
+@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+			DataSource dataSource, JpaVendorAdapter jpaVendorAdapter) {
+		LocalContainerEntityManagerFactoryBean emfb = new LocalContainerEntityManagerFactoryBean();
+		emfb.setDataSource(dataSource);
+		emfb.setJpaVendorAdapter(jpaVendorAdapter);
+      //persistence.xml文件的主要作用在于识别持久化单元中的实体类。从Spring 3.1开始，我们能够在LocalContainerEntityManagerFactoryBean中直接设置packagesToScan属性。
+      //此配置会自动扫描com.hbxtzy.entity中带有@Entity注解的类。由于DataSource也已经配置过了，因此完全可以省略原有JPA所需要的persistence.xml文件。
+      emfb.setPackagesToScan("com.hbxtzy.entity");
+		return emfb;
+	}
+//JpaVendorAdapter的实现类EclipseLinkJpaVendorAdapter、OpenJpaVendorAdapter
+	@Bean
+	public JpaVendorAdapter jpaVendorAdapter(){
+		HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+		adapter.setDatabase(Database.MYSQL);
+		adapter.setGenerateDdl(false);
+		adapter.setShowSql(true);
+      adapter.setDatabasePlatform("org.hibernate.dialect.MySQL5Dialect");
+		return adapter;
+	}
+
+```
+
+tips：还可以通过JNDI来获取实体管理工厂。
+
+### 代码调试过程
+
+hibernate 3版本要求默认开启validator验证，会提示unable to get the default Bean Validation.异常，需要配置一个<property name="javax.persistence.validation.mode">none</property>
+
+引入hibernate5之后，则会出现Unsupported major.minor version 52.0异常。原因是hibernate5采用jdk7进行编译的在myeclipse默认的jdk6下面运行会出错。
+
+若采用jdk8，则会导致其他的类出现问题。
+
+The type java.lang.CharSequence cannot be resolved. It is indirectly referenced from required .class files。
+
+Java 8 supports [default methods](http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html) in interfaces. And in JDK 8 a lot of old interfaces now have new default methods. For example, [now in CharSequence we have chars and codePoints methods](http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/8-b132/java/lang/CharSequence.java#CharSequence.codePoints%28%29).
+If source level of your project is lower than 1.8, then compiler doesn't allow you to use default methods in interfaces. So it cannot compile classes that directly on indirectly depend on this interfaces.
+If I get your problem right, then you have two solutions. First solution is to rollback to JDK 7, then you will use old CharSequence interface without default methods. Second solution is to set source level of your project to 1.8, then your compiler will not complain about default methods in interfaces。
+
+### 解决方案：
+
+> 引入hibernate4.0的库
+
+### 完整环境配置如下
+
+mac
+
+myeclipse 10
+
+自带jdk1.6
+
+hibernate 4.3.11
+
+spring 4.3.3
+
+spring-data-core-1.12.5
+
+spring-data-jpa.1.10.5
+
