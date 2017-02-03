@@ -1,5 +1,5 @@
 # MySql
-
+2017/2/3
 ## MAC下打开MySql控制台
 
 ```sql
