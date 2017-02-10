@@ -1,72 +1,3 @@
-# Spring MVC入门
-
-1. 在web.xml中配置一个Servlet，在应用启动之初就开始启动
-
-```java
-<servlet>
-  <servlet-name>spitter</servlet-name>
-  <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-  <init-param>
-      <param-name>load-on-startup</param-name>
-      <param-value>1</param-value>
-   </init-param>
-</servlet>
-<servlet-mapping>
-    <servlet-name>spitter</servlet-name>
-    <url-pattern>/</url-pattern>
-</servlet-mapping>
-```
-
-2.在WEB-INF下面新建一个spitter-servlet.xml文件。
-
-```java
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-    http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-    http://www.springframework.org/schema/mvc
-    http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
-	http://www.springframework.org/schema/context
-    http://www.springframework.org/schema/context/spring-context-4.3.xsd
-    ">
-	<!--  所有以resources开发的资源请求，都会由应用程序根路径下的/resources目录提供服务，不经过servlet -->
-	<mvc:resources mapping="/resources/**" location="/resources/*" ></mvc:resources>
-
-	<!-- 注册了多个特性：JSR-303校验、信息转换、对域格式的支持。 -->
-	<mvc:annotation-driven />
-
-	<!--查找使用@Component注解的类，并将其注册为Bean。@Controller注解是@Component注解的具体化。-->
-  <context:component-scan base-package="com.controller" >
-  </context:component-scan>
-	
-  <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-          <property name="prefix" value="/WEB-INF/view/"></property>
-          <property name="suffix" value=".jsp"></property>
-  </bean>
-      
-  <bean id="spitterService" class="com.controller.SpitterService">
-  </bean>
-</beans>
-```
-
-3.新建一个Controller
-
-```JAVA
-@Controller
-public class HomeController {	
-	@RequestMapping({"/","/home"})
-	public String showHomePage(Map<String,Object> model){
-		model.put("message", "message from spring mvc!");
-		return "home";
-	}	
-}
-```
-
-
-
 # Spring无XML配置
 
 ```java
@@ -225,6 +156,73 @@ public class Test {
 }
 ```
 
+# Spring MVC笔记（基于xml文件）
+
+1. 在web.xml中配置一个Servlet，在应用启动之初就开始启动
+
+```java
+<servlet>
+  <servlet-name>spitter</servlet-name>
+  <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+  <init-param>
+      <param-name>load-on-startup</param-name>
+      <param-value>1</param-value>
+   </init-param>
+</servlet>
+<servlet-mapping>
+    <servlet-name>spitter</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
+```
+
+2.在WEB-INF下面新建一个spitter-servlet.xml文件。
+
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+	http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-4.3.xsd
+    ">
+	<!--  所有以resources开发的资源请求，都会由应用程序根路径下的/resources目录提供服务，不经过servlet -->
+	<mvc:resources mapping="/resources/**" location="/resources/*" ></mvc:resources>
+
+	<!-- 注册了多个特性：JSR-303校验、信息转换、对域格式的支持。 -->
+	<mvc:annotation-driven />
+
+	<!--查找使用@Component注解的类，并将其注册为Bean。@Controller注解是@Component注解的具体化。-->
+  <context:component-scan base-package="com.controller" >
+  </context:component-scan>
+	
+  <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+          <property name="prefix" value="/WEB-INF/view/"></property>
+          <property name="suffix" value=".jsp"></property>
+  </bean>
+      
+  <bean id="spitterService" class="com.controller.SpitterService">
+  </bean>
+</beans>
+```
+
+3.新建一个Controller
+
+```JAVA
+@Controller
+public class HomeController {	
+	@RequestMapping({"/","/home"})
+	public String showHomePage(Map<String,Object> model){
+		model.put("message", "message from spring mvc!");
+		return "home";
+	}	
+}
+```
+
 # Spring MVC笔记（基于注解）
 
 > 基于spring4.3 ，参考spring in action第4版，由于应用了servlet3.0中引入的注解配置servlet机制，因此部署时至少采用tomcat7.0以上的版本。
@@ -319,6 +317,82 @@ public class HomeControllerTest {
 	}
 }
 ```
+
+
+# 参数传递
+## 1.查询参数
+
+public String home(@RequestParam("max") long max)
+
+## 2.表单参数
+
+public String home(User user) user对象的属性会使用请求对象中同名的参数填充
+
+## 3.路径变量
+
+@PathVarible("max") long max
+
+# action获取reqeust、session中的属性（未解决）
+
+请求参数中各个属性：Model ==》MVC中的Model，用于Controller向View传递数据的载体，Map类型的数据。
+
+# 请求转发与重定向（未解决）
+
+*重定向的时候携带数据：*
+
+1.地址栏参数：不安全，不应该采用
+
+2.model.addFlashAttribute()的方式，该属性在下一次请求后自动消息。
+
+
+
+#表单校验
+
+1.为实体类的各个属性添加校验注解。（比如：@Digits @NotNulls）
+
+2.Controll的方法声明
+
+```JAVA
+public String home(@Valid User user,Errors errors){
+  if(errors.hasErrors()){
+    return "registerForm";
+  }
+}
+```
+
+# Spring标签库：
+
+> 渲染html表单标签（绑定model中的某个属性）、工具类标签
+
+```jsp
+<%@ taglib uri="http://www.springframework.org/tags/form" prefix="sf"%>
+
+<sf:form method="" action="" commandName="User">
+	FirstName:<sf:input path="firstName" />
+</sf:form>
+
+<sf:errors path="firstName" cssClass="error" />
+span.error{color:red;}
+
+//几种展示错误信息
+<sf:errors path="*" element="div" cssClass="errors" />
+
+```
+
+中文提示的错误信息：
+
+```java
+//1.属性字段指定提示信息
+@NotNull
+@Size(min=5,max=25,message="{username.size}")   //若无大括号，则message里面的值作为普通的字符串处理。
+private String username;
+//2.创建ValidationMessage.properties放在根类路径下，ValidationErrors_zh.properties 中文
+username.size=username must be between {min} and {max}characters longs.
+```
+
+
+
+
 
 # Spring文件上传
 
@@ -422,18 +496,6 @@ public String handleException(){
 @ControllerAdvice已经使用过了@Component注解，会被自动扫描到。
 
 
-
-# 请求转发与重定向（未解决）
-
-*重定向的时候携带数据：*
-
-1.地址栏参数：不安全，不应该采用
-
-2.model.addFlashAttribute()的方式，该属性在下一次请求后自动消息。
-
-
-
-# action获取reqeust、session中的属性（未解决）
 
 # Spring数据库访问
 
