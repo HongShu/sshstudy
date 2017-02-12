@@ -335,16 +335,18 @@ public String home(User user) user对象的属性会使用请求对象中同名�
 # action获取reqeust、session中的属性（未解决）
 
 请求参数中各个属性：Model ==》MVC中的Model，用于Controller向View传递数据的载体，Map类型的数据。
+HttpSession session ,HttpServletRequest request,Locale localde 可以作为参数放置在Controller的参数声明中。以实现对request、session等属性的访问。
 
 # 请求转发与重定向（未解决）
 
+重定向: return "redirect:/product_view/1";
+
 *重定向的时候携带数据：*
-
 1.地址栏参数：不安全，不应该采用
-
-2.model.addFlashAttribute()的方式，该属性在下一次请求后自动消息。
-
-
+2.model.addFlashAttribute()的方式，该属性在重定向之后仍然能够访问。
+另一种实现方式：
+Controller中添加参数：RedirectAttributes redirectAttributes
+redirectAttributes.addFlashAttribute("message","msg before redirect");
 
 #表单校验
 
