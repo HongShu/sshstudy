@@ -261,7 +261,9 @@ public class SpittrWebAppInitializer extends AbstractAnnotationConfigDispatcherS
 
 1. Servlet3.0的环境中，容器会在类路径中查找实现javax.servlet.ServletContainerInitializer接口的类，若找到，则用它配置servlet容器。
 2. Spring中有一个SpringServletContainerInitializer类，实现上述接口。但是这个类并不是直接配置这些信息，而是查找一个实现了WebApplicationInitializer接口的类，并将配置任务交给它。
-3. AbstractAnnotationConfigDispatcherServletInitializer实现了WebApplicationInitializer接口，所以我们自己定义的类，只要实现这个抽象类就可以了。
+3. AbstractAnnotationConfigDispatcherServletInitializer（会创建DispatcherServlet和ContextLoaderListener）实现了WebApplicationInitializer接口，所以我们自己定义的类，只要实现这个抽象类就可以了。
+4. DispatcherServlet加载包含Web组件的bean，如控制器、视图解析器以及处理器映射。
+5. ContextLoaderListener加载应用中其他的bean，如驱动应用后端的中间层和数据层组件。
 
 WebConfig.java
 
@@ -318,8 +320,26 @@ public class HomeControllerTest {
 }
 ```
 
+## 特殊需求：添加其他的Servlet和Filter
+
+基于Java的initializer的好处在于可以定义任意数量的初始化器。
+
+解决方案：实现Spring的WebApplicationInitializer接口。
+
+只需要Filter的话，可以重载AbstractAnnotationConfigDispatcherServletInitializer的getServletFilters()方法以注册Filter。
+
+```JAVA
+@Override
+protected Filter[] getServletFilters() {
+  	return new Filter[]{new MyFilter()};
+}
+//MyFilter没有声明映射路径，原因就是它会映射到DispatcherServlet上。
+```
+
+
 
 # 参数传递
+
 ## 1.查询参数
 
 public String home(@RequestParam("max") long max)
