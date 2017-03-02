@@ -732,7 +732,6 @@ LocalContainerEntityManagerFactoryBean 配置这个bean，实现容器管理类�
       adapter.setDatabasePlatform("org.hibernate.dialect.MySQL5Dialect");
 		return adapter;
 	}
-
 ```
 
 tips：还可以通过JNDI来获取实体管理工厂。
@@ -770,4 +769,125 @@ spring 4.3.3
 spring-data-core-1.12.5
 
 spring-data-jpa.1.10.5
+
+
+
+
+
+# Eclipse JavaEE  IDE配置
+
+1.导入相关Jar包
+
+- Spring下载包下所有包
+- hibernate4 required 所有jar包
+- hibernate4/lib/jpa/hibernate-entitymanager-4.3.11Final.jar
+- slf4j-api.1.7.24.jar
+- spring data
+- spring data jpa
+- jdbc驱动
+- jstl
+
+2.除了基本的MVC纯注解的配置之外，额外列出RootConfig的代码
+
+```java
+@Configuration
+@ComponentScan(basePackages={"com.web.root"})
+public class RootConfig {
+	@Bean
+	public BasicDataSource dataSource(){
+	  	BasicDataSource ds = new BasicDataSource();
+	  	ds.setDriverClassName("com.mysql.jdbc.Driver");
+	  	ds.setUrl("jdbc:mysql://localhost:3306/ssh");
+	  	ds.setUsername("root");
+	  	ds.setPassword("");
+	  	ds.setInitialSize(5);
+	  	ds.setMaxActive(10);
+	   	return ds;
+	}
+	
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+			DataSource dataSource, JpaVendorAdapter jpaVendorAdapter) {
+		LocalContainerEntityManagerFactoryBean emfb = new LocalContainerEntityManagerFactoryBean();
+		emfb.setDataSource(dataSource);
+		emfb.setJpaVendorAdapter(jpaVendorAdapter);
+      //persistence.xml文件的主要作用在于识别持久化单元中的实体类。从Spring 3.1开始，我们能够在LocalContainerEntityManagerFactoryBean中直接设置packagesToScan属性。
+      //此配置会自动扫描com.hbxtzy.entity中带有@Entity注解的类。由于DataSource也已经配置过了，因此完全可以省略原有JPA所需要的persistence.xml文件。
+      emfb.setPackagesToScan("com.entity");
+		return emfb;
+	}
+	//JpaVendorAdapter的实现类EclipseLinkJpaVendorAdapter、OpenJpaVendorAdapter
+	@Bean
+	public JpaVendorAdapter jpaVendorAdapter(){
+		HibernateJpaVendorAdapter adapter = new HibernateJpaVendorAdapter();
+		adapter.setDatabase(Database.MYSQL);
+		adapter.setGenerateDdl(false);
+		adapter.setShowSql(true);
+      adapter.setDatabasePlatform("org.hibernate.dialect.MySQL5Dialect");
+		return adapter;
+	}
+  
+  //Spring in action 上面并没有提这个内容，但是不配置会提示找不到事务管理器。
+	@Bean
+	public JpaTransactionManager transactionManager(){
+		return new org.springframework.orm.jpa.JpaTransactionManager();
+	}
+```
+
+3. webroot的配置中，配置要扫描的自动配置类放在com.web.root中，这个包下有如下类，它的目的是自动生成JpaRepository的实现类
+
+   ```java
+   package com.web.root;
+   import org.springframework.context.annotation.Configuration;
+   import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+   @Configuration
+   @EnableJpaRepositories(basePackages="com.web.root.dao")
+   public class JpaConfiguration {
+   	
+   }
+   ```
+
+   4.配置JavaBean ,RootConfig中指定了放在包com.entity下
+
+   ```JAVA
+   package com.entity;
+
+   import javax.persistence.Column;
+   import javax.persistence.Entity;
+   import javax.persistence.Id;
+   import javax.persistence.Table;
+
+   @Entity
+   @Table(name="user")
+   public class User {
+   	@Id
+   	private int uid;
+   	
+   	@Column(name="UNAME")
+   	private String uname;
+   	
+   	@Column(name="AGE")
+   	private int age;
+    	
+     	//省略get、set方法以及构造方法
+   }
+   ```
+
+   5.步骤3中配置了，要自动实现的JpaRepostory放在包com.web.root.dao下。
+
+   ```JAVA
+   package com.web.root.dao;
+
+   import org.springframework.data.jpa.repository.JpaRepository;
+
+   import com.entity.User;
+
+   public interface UserRepository extends JpaRepository<User, Integer>{	
+   	
+   }
+   ```
+
+   ​
+
+
 
