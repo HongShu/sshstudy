@@ -70,7 +70,7 @@ public class Dept {
 
 public class User{
     //默认情况下，hibernate采用的是lazy模式，即获取user的时候，并没有加载dept。再user对象上调用getDept()方法时，dept为空，所以，hibernate采用session获取。由于在获取user的时候，session已经关闭，所以会产生org.hibernate.LazyInitializationException.解决方案是将延迟加载改成积极加载。即设置fetch=FetchType.EAGER
-  //这样当然会带来效率的问题，如何解决需要进一步研究。
+  //这样当然会带来效率的问题，后面有OpenInView模式解决方案的说明。
  	@OneToMany(mappedBy="user",fetch=FetchType.EAGER)
 	private List<Dept> depts;
 }
@@ -101,3 +101,24 @@ public class Dog{
 ```
 
 > 其他更特殊的用法暂为研究。比如，user_dog中有一个领用宠物时间的字段。
+
+## OpenInView模式解决非懒加载的时候性能问题。
+
+>这也会带来问题，会影响响应性能。
+
+在WebAppIntial中添加一个过滤器，如下设置方法：
+
+```JAVA
+@Override
+	protected Filter[] getServletFilters() {
+		// TODO Auto-generated method stub
+		return new Filter[]{new OpenEntityManagerInViewFilter()};
+	}
+```
+
+
+
+## 其他问题说明(bug)
+
+在Person类中同时测试多对一（部门、人）和多对多（人、狗） 生成的SQL语句，某些特定的情况下出现了狗狗数目翻翻的情况。通过查看生成的SQL语句发现，可能实由于三表查询，即查询部门、人、狗三张表（实际上是四张表，包括user_dog表）的连接查询的时候除了问题。不是每次都出现，特殊情况下会出现。
+
