@@ -693,7 +693,7 @@ public void addUser(User user){
 
 ## 四、Spring与JPA
 
-### 1.配置实体管理器工厂（entity manager factory）
+1.配置实体管理器工厂（entity manager factory）
 
 >基于JPA的应用需要使用EntityManagerFactory的实现类来获取EntityManager实例。
 
@@ -736,7 +736,7 @@ LocalContainerEntityManagerFactoryBean 配置这个bean，实现容器管理类�
 
 tips：还可以通过JNDI来获取实体管理工厂。
 
-### 代码调试过程
+ 代码调试过程
 
 hibernate 3版本要求默认开启validator验证，会提示unable to get the default Bean Validation.异常，需要配置一个<property name="javax.persistence.validation.mode">none</property>
 
@@ -750,11 +750,11 @@ Java 8 supports [default methods](http://docs.oracle.com/javase/tutorial/java/I
 If source level of your project is lower than 1.8, then compiler doesn't allow you to use default methods in interfaces. So it cannot compile classes that directly on indirectly depend on this interfaces.
 If I get your problem right, then you have two solutions. First solution is to rollback to JDK 7, then you will use old CharSequence interface without default methods. Second solution is to set source level of your project to 1.8, then your compiler will not complain about default methods in interfaces。
 
-### 解决方案：
+ 解决方案：
 
 > 引入hibernate4.0的库
 
-### 完整环境配置如下
+ 完整环境配置如下
 
 mac
 
@@ -888,6 +888,20 @@ public class RootConfig {
    ```
 
    # 下一步需要测试的是JPA多表关联的问题
+
+   # Spring MVC json
+
+   ```java
+   //1.导入JSON的 annotations、core、databind等jar包
+
+   //2.使用@ResponseBody注解Action
+   @ResponseBody
+   @RequestMapping(value="/",method=RequestMethod.GET)
+   public Dog home(Model model){
+     Dog dog = new Dog(1,"拉布拉多");
+     return dog;
+   }
+   ```
 
    ​
 
